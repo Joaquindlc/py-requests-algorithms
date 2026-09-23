@@ -45,15 +45,35 @@ def consultar_poke_api(nombre: str) -> dict:
         print(f"Error al consultar POKEAPI: {error}")
         return {}
 
+# API de anime
 def consultar_jikan_api(nombre: str) -> dict:
     params = {
         "q": nombre,
         "limit": 1
     }
+
+    # agrego encabezado header para evitar el bloqueo de jikan
+    headers = {
+        "User-Agent": "ProyectoRequestsApp/1.0"
+    }
     try:
-        response = requests.get(settings.JIKAN_API_URL, params=params, timeout=5)
+        response = requests.get(
+            settings.JIKAN_API_URL,
+            params=params,
+            headers=headers,
+            timeout=10
+        )
         response.raise_for_status()
-        return response.json()
+        json_data = response.json()
+
+        # Jikan va a devolver el resultado dentro de la lista "data"
+        lista_resultados = json_data.get("data", [])
+
+        # Si encontramos el personaje, devolvemos el primero. sino un dict vacio
+        if lista_resultados:
+            return lista_resultados[0]
+        return {}
+
     except requests.exceptions.RequestException as error:
         print(f"Error al consultar Jikan API: {error}")
         return {}
